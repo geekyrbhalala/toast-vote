@@ -1,0 +1,128 @@
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+parameters:
+- name: IsSetupInfrastructure
+  type: boolean
+  default: false
+- name: IsTeardownInfrastructure
+  type: boolean
+  default: false
+
+variables:
+  workingDirectory: '$(System.DefaultWorkingDirectory)/Infrastructure'
+
+stages:
+- ${{ if eq(parameters.IsSetupInfrastructure, true) }}:
+  # Stage 1 - Terraform Initialization
+  - stage: Build
+    displayName: "Terraform Build"
+    jobs:
+    - job: Build
+      displayName: "Terraform Build Job"
+      steps:
+      - task: TerraformTaskV4@4
+        name: 'terraformInit'
+        displayName: 'Initialize Terraform'
+        inputs:
+          provider: 'aws'
+          command: 'init'         
+          workingDirectory: ${{variables.workingDirectory}}
+          backendType: 's3'
+          backendAWSRegion: 'ca-central-1'
+          backendServiceAWS: 'aws-terraform-svc'
+          backendAWSBucketName: 'terraform-state-toast-vote'
+          backendAWSKey: 'toast-vote/terraform.tfstate'
+          backendAWSDynamoDBTableName: 'toast-vote-locks'
+      - task: TerraformTaskV4@4
+        name: 'terraformPlan'
+        displayName: 'Plan Terraform'
+        inputs:
+          provider: 'aws'
+          command: 'plan'
+          workingDirectory: ${{variables.workingDirectory}}
+          commandOptions: '-out main.tfplan'
+          environmentServiceNameAWS: 'aws-terraform-svc'
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish Terraform Plan'
+        inputs:
+          targetPath: ${{variables.workingDirectory}}
+          artifactName: 'terraformPlan'
+      
+  # Stage 2 - Terraform Apply
+  - stage: Release
+    displayName: "Terraform Release"
+    jobs:
+    - job: Apply
+      displayName: "Terraform Release Job"
+      steps:
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download Terraform Plan Artifact'
+        inputs:
+          artifactName: 'terraformPlan'
+          targetPath: $(Pipeline.Workspace)
+      - task: TerraformTaskV4@4
+        name: 'terraformInit'
+        displayName: 'Initialize Terraform'
+        inputs:
+          provider: 'aws'
+          command: 'init'         
+          workingDirectory: ${{variables.workingDirectory}}
+          backendType: 's3'
+          backendAWSRegion: 'us-east-1'
+          backendServiceAWS: 'aws-terraform-svc'
+          backendAWSBucketName: 'terraform-state-toast-vote'
+          backendAWSKey: 'toast-vote/terraform.tfstate'
+      - task: TerraformTaskV4@4
+        name: 'terraformApply'
+        displayName: 'Apply Terraform'
+        inputs:
+          provider: 'aws'
+          command: 'apply'
+          workingDirectory: ${{variables.workingDirectory}}
+          commandOptions: '-input=false $(Pipeline.Workspace)/main.tfplan'
+          environmentServiceNameAWS: 'aws-terraform-svc'
+
+
+# # Stage 3 - Teardown Infrastructure
+# - ${{ if eq(parameters.IsTeardownInfrastructure, true) }}:
+#   - stage: InfrastructureTeardown
+#     displayName: 'Infrastructure Teardown'
+#     jobs:
+#     - job: TerraformIaC
+#       displayName: 'Infrastructure Teardown'
+#       steps:
+#       - task: TerraformTaskV4@4
+#         name: 'terraformInit'
+#         displayName: 'Initialize Terraform'
+#         inputs:
+#           provider: 'aws'
+#           command: 'init'
+#           workingDirectory: ${{variables.workingDirectory}}
+#           backendType: 's3'
+#           backendAWSRegion: 'us-east-1'
+#           backendServiceAWS: 'aws-terraform-svc'
+#           backendAWSBucketName: 'terraform-state-for-demo-vpc'
+#           backendAWSKey: 'tf-101/terraform.tfstate'
+#           backendAWSDynamoDBTableName: 'terraform-locks'
+
+#       - task: TerraformTaskV4@4
+#         name: 'terraformPlan'
+#         displayName: 'Plan Terraform'
+#         inputs:
+#           provider: 'aws'
+#           command: 'plan'
+#           workingDirectory: ${{variables.workingDirectory}}
+#           commandOptions: '-out main.tfplan'
+#           environmentServiceNameAWS: 'aws-terraform-svc'
+
+#       - task: TerraformTaskV4@4
+#         name: 'terraformDestroy'
+#         displayName: 'Destroy Terraform'
+#         inputs:
+#           provider: 'aws'
+#           command: 'destroy'
+#           workingDirectory: ${{variables.workingDirectory}}
+#           environmentServiceNameAWS: 'aws-terraform-svc'
