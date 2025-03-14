@@ -3,7 +3,7 @@ terraform {
     bucket         = "terraform-state-toast-vote"
     key            = "toast-vote/terraform.tfstate"
     region         = "ca-central-1"
-    dynamodb_table = "toast-vote-locks"
+    use_lockfile   = true
     encrypt        = true
   }
 }
