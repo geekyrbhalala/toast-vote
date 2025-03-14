@@ -7,7 +7,7 @@ data "aws_route53_zone" "geekyrbhalala" {
 }
 
 resource "aws_route53_record" "website" {
-  zone_id = aws_route53_zone.geekyrbhalala.zone_id
+  zone_id = data.aws_route53_zone.geekyrbhalala.zone_id
   name    = var.domain_name
   type    = "A"
 
