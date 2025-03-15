@@ -8,13 +8,12 @@ data "aws_route53_zone" "geekyrbhalala" {
 
 resource "aws_route53_record" "website" {
   zone_id = data.aws_route53_zone.geekyrbhalala.zone_id
-  name    = var.domain_name
+  name    = var.domain_name  # Your domain name, e.g., geekyrbhalala.online
   type    = "A"
-  ttl     = 300
 
   alias {
-    name = var.cdn_endpoint
-    zone_id = "Z2FDTNDATAQYW2"
+    name                   = var.cdn_endpoint  # This should be the CloudFront domain name, e.g., d12345abcde.cloudfront.net
+    zone_id                = "Z2FDTNDATAQYW2"  # CloudFront hosted zone ID
     evaluate_target_health = false
   }
 }

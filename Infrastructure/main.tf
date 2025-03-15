@@ -12,7 +12,7 @@ module "frontend" {
 
 
 module "map_domain_with_s3" {
-  source      = "./modules/Route53"
-  domain_name = var.domain_name
+  source       = "./modules/Route53"
+  domain_name  = var.domain_name
   cdn_endpoint = module.frontend.cdn_endpoint
 }
