@@ -55,7 +55,7 @@ resource "aws_s3_bucket_website_configuration" "frontend_website" {
 }
 
 locals {
-  s3_website_url = aws_s3_bucket.frontend.website_endpoint
+  s3_website_url = aws_s3_bucket_website_configuration.frontend_website.website_endpoint
 }
 
 resource "aws_cloudfront_distribution" "s3_distribution" {
