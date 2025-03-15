@@ -9,11 +9,7 @@ data "aws_route53_zone" "geekyrbhalala" {
 resource "aws_route53_record" "website" {
   zone_id = data.aws_route53_zone.geekyrbhalala.zone_id
   name    = var.domain_name
-  type    = "A"
-
-  alias {
-    name                   = var.s3_endpoint
-    zone_id                = "Z3AQBSTGFYJSTF" # Fixed AWS Zone ID for S3 website endpoints
-    evaluate_target_health = false
-  }
+  type    = "CNAME"
+  ttl     = 300
+  records = [var.s3_endpoint]
 }
