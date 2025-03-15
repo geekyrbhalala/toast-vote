@@ -27,13 +27,14 @@ resource "aws_route53_record" "cert_validation" {
   records = [each.value.value]
 }
 
-# Validate the ACM certificate
-resource "aws_acm_certificate_validation" "cert" {
-  certificate_arn         = var.acm_cert_arn
-  validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
+#TODO : Add the certificate verification to the ACM
+# # Validate the ACM certificate
+# resource "aws_acm_certificate_validation" "cert" {
+#   certificate_arn         = var.acm_cert_arn
+#   validation_record_fqdns = [for record in aws_route53_record.cert_validation : record.fqdn]
 
-  depends_on = [ aws_route53_record.cert_validation ]
-}
+#   depends_on = [ aws_route53_record.cert_validation ]
+# }
 
 # Route 53 Record for CloudFront
 resource "aws_route53_record" "website" {
