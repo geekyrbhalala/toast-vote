@@ -98,8 +98,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
   }
 }
 
-
-
-output "website_url" {
-  value = local.s3_website_url
+output "cdn_endpoint" {
+  value = aws_cloudfront_distribution.s3_distribution.domain_name
 }

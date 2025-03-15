@@ -1,5 +1,5 @@
 variable "domain_name" {}
-variable "s3_endpoint" {}
+variable "cdn_endpoint" {}
 
 data "aws_route53_zone" "geekyrbhalala" {
   name         = var.domain_name
@@ -9,7 +9,12 @@ data "aws_route53_zone" "geekyrbhalala" {
 resource "aws_route53_record" "website" {
   zone_id = data.aws_route53_zone.geekyrbhalala.zone_id
   name    = var.domain_name
-  type    = "CNAME"
+  type    = "A"
   ttl     = 300
-  records = [var.s3_endpoint]
+
+  alias {
+    name = var.cdn_endpoint
+    zone_id = "Z2FDTNDATAQYW2"
+    evaluate_target_health = false
+  }
 }

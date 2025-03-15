@@ -14,5 +14,5 @@ module "frontend" {
 module "map_domain_with_s3" {
   source      = "./modules/Route53"
   domain_name = var.domain_name
-  s3_endpoint = module.frontend.website_url
+  cdn_endpoint = module.frontend.cdn_endpoint
 }
