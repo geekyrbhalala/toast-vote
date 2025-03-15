@@ -71,7 +71,7 @@ stages:
           command: 'init'         
           workingDirectory: ${{variables.workingDirectory}}
           backendType: 's3'
-          backendAWSRegion: 'us-east-1'
+          backendAWSRegion: 'ca-central-1'
           backendServiceAWS: 'aws-terraform-svc'
           backendAWSBucketName: 'terraform-state-toast-vote'
           backendAWSKey: 'toast-vote/terraform.tfstate'
@@ -86,43 +86,42 @@ stages:
           environmentServiceNameAWS: 'aws-terraform-svc'
 
 
-# # Stage 3 - Teardown Infrastructure
-# - ${{ if eq(parameters.IsTeardownInfrastructure, true) }}:
-#   - stage: InfrastructureTeardown
-#     displayName: 'Infrastructure Teardown'
-#     jobs:
-#     - job: TerraformIaC
-#       displayName: 'Infrastructure Teardown'
-#       steps:
-#       - task: TerraformTaskV4@4
-#         name: 'terraformInit'
-#         displayName: 'Initialize Terraform'
-#         inputs:
-#           provider: 'aws'
-#           command: 'init'
-#           workingDirectory: ${{variables.workingDirectory}}
-#           backendType: 's3'
-#           backendAWSRegion: 'us-east-1'
-#           backendServiceAWS: 'aws-terraform-svc'
-#           backendAWSBucketName: 'terraform-state-for-demo-vpc'
-#           backendAWSKey: 'tf-101/terraform.tfstate'
-#           backendAWSDynamoDBTableName: 'terraform-locks'
+# Stage 3 - Teardown Infrastructure
+- ${{ if eq(parameters.IsTeardownInfrastructure, true) }}:
+  - stage: InfrastructureTeardown
+    displayName: 'Infrastructure Teardown'
+    jobs:
+    - job: TerraformIaC
+      displayName: 'Infrastructure Teardown'
+      steps:
+      - task: TerraformTaskV4@4
+        name: 'terraformInit'
+        displayName: 'Initialize Terraform'
+        inputs:
+          provider: 'aws'
+          command: 'init'
+          workingDirectory: ${{variables.workingDirectory}}
+          backendType: 's3'
+          backendAWSRegion: 'ca-central-1'
+          backendServiceAWS: 'aws-terraform-svc'
+          backendAWSBucketName: 'terraform-state-toast-vote'
+          backendAWSKey: 'toast-vote/terraform.tfstate'
 
-#       - task: TerraformTaskV4@4
-#         name: 'terraformPlan'
-#         displayName: 'Plan Terraform'
-#         inputs:
-#           provider: 'aws'
-#           command: 'plan'
-#           workingDirectory: ${{variables.workingDirectory}}
-#           commandOptions: '-out main.tfplan'
-#           environmentServiceNameAWS: 'aws-terraform-svc'
+      - task: TerraformTaskV4@4
+        name: 'terraformPlan'
+        displayName: 'Plan Terraform'
+        inputs:
+          provider: 'aws'
+          command: 'plan'
+          workingDirectory: ${{variables.workingDirectory}}
+          commandOptions: '-out main.tfplan'
+          environmentServiceNameAWS: 'aws-terraform-svc'
 
-#       - task: TerraformTaskV4@4
-#         name: 'terraformDestroy'
-#         displayName: 'Destroy Terraform'
-#         inputs:
-#           provider: 'aws'
-#           command: 'destroy'
-#           workingDirectory: ${{variables.workingDirectory}}
-#           environmentServiceNameAWS: 'aws-terraform-svc'
+      - task: TerraformTaskV4@4
+        name: 'terraformDestroy'
+        displayName: 'Destroy Terraform'
+        inputs:
+          provider: 'aws'
+          command: 'destroy'
+          workingDirectory: ${{variables.workingDirectory}}
+          environmentServiceNameAWS: 'aws-terraform-svc'
