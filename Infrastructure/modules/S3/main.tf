@@ -25,9 +25,7 @@ resource "aws_s3_bucket_public_access_block" "frontend_access" {
   restrict_public_buckets = false
 }
 
-resource "aws_cloudfront_origin_access_identity" "frontend_oai" {
-  comment = "OAI for frontend bucket"
-}
+data "aws_caller_identity" "current" {}
 
 resource "aws_s3_bucket_policy" "frontend_policy" {
   bucket = aws_s3_bucket.frontend.id
@@ -38,10 +36,15 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
     {
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${aws_cloudfront_origin_access_identity.frontend_oai.id}"
+        "Service": "cloudfront.amazonaws.com"
       },
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::${aws_s3_bucket.frontend.bucket}/*"
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.frontend.bucket}/*",
+      "Condition": {
+        "StringEquals": {
+          "AWS:SourceArn": "arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/${aws_cloudfront_distribution.s3_distribution.id}"
+        }
+      }
     }
   ]
 }
@@ -65,16 +68,22 @@ locals {
   s3_website_url = aws_s3_bucket_website_configuration.frontend_website.website_endpoint
 }
 
+resource "aws_cloudfront_origin_access_control" "oac" {
+  name                              = "OAC-${var.domain_name}"
+  description                       = "OAC for ${var.domain_name}"
+  origin_access_control_origin_type = "s3"
+  signing_behavior                  = "always"
+  signing_protocol                   = "sigv4"
+}
+
+
 resource "aws_cloudfront_distribution" "s3_distribution" {
   origin {
     domain_name = local.s3_website_url
     origin_id   = "S3-${var.domain_name}"
 
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "https-only"
-      origin_ssl_protocols   = ["TLSv1.2"]
+    s3_origin_config {
+      origin_access_identity = aws_cloudfront_origin_access_control.oac.id
     }
   }
 
