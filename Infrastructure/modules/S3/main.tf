@@ -25,6 +25,10 @@ resource "aws_s3_bucket_public_access_block" "frontend_access" {
   restrict_public_buckets = false
 }
 
+resource "aws_cloudfront_origin_access_identity" "frontend_oai" {
+  comment = "OAI for frontend bucket"
+}
+
 resource "aws_s3_bucket_policy" "frontend_policy" {
   bucket = aws_s3_bucket.frontend.id
   policy = <<POLICY
@@ -33,14 +37,17 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
   "Statement": [
     {
       "Effect": "Allow",
-      "Principal": "*",
+      "Principal": {
+        "AWS": "arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${aws_cloudfront_origin_access_identity.frontend_oai.id}"
+      },
       "Action": "s3:GetObject",
-      "Resource": "arn:aws:s3:::${var.domain_name}/*"
+      "Resource": "arn:aws:s3:::${aws_s3_bucket.frontend.bucket}/*"
     }
   ]
 }
 POLICY
 }
+
 
 resource "aws_s3_bucket_website_configuration" "frontend_website" {
   bucket = aws_s3_bucket.frontend.id
