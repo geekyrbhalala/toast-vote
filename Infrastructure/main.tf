@@ -2,6 +2,11 @@ provider "aws" {
   region = var.aws_region
 }
 
+provider "aws" {
+  alias  = "acm"
+  region = "us-east-1"
+}
+
 locals {
   index_document = "index.html"
   error_document = "error.html"
@@ -17,6 +22,7 @@ module "s3_bucket" {
 
 # ACM Certificate (for custom domain)
 resource "aws_acm_certificate" "cert" {
+  provider          = aws.acm
   domain_name       = var.domain_name
   validation_method = "DNS"
 
