@@ -37,6 +37,8 @@ module "cdn_s3_distribution" {
   aws_region     = var.aws_region
   index_document = local.index_document
   acm_cert_arn   = aws_acm_certificate.cert.arn
+
+  depends_on = [ aws_acm_certificate.cert ]
 }
 
 
@@ -48,6 +50,8 @@ module "route53_with_cdn" {
   cdn_hosted_zone_id            = module.cdn_s3_distribution.cdn_hosted_zone_id
   acm_domain_validation_options = aws_acm_certificate.cert.domain_validation_options
   acm_cert_arn                  = aws_acm_certificate.cert.arn
+
+  depends_on = [ aws_acm_certificate.cert ]
 }
 
 # S3 Bucket Policy to restrict only to cdn access
