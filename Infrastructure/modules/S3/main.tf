@@ -101,5 +101,5 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
 
 
 output "website_url" {
-  value = s3_website_url
+  value = local.s3_website_url
 }
