@@ -6,3 +6,12 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
+steps:
+- task: S3Upload@1
+  displayName: 'Deploy frontend to S3'
+  inputs:
+    awsCredentials: 'aws-connection'  # AWS connection name
+    regionName: 'ca-central-1'  # Set your AWS region
+    bucketName: 'geekyrbhalala.online'  # S3 bucket name
+    sourceFolder: '$(Build.SourcesDirectory)/Frontend'  # Path to the frontend folder in your repo
+    globExpressions: '**'  # Includes all files from the source folder
