@@ -4,11 +4,25 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+- task: Npm@1
+  displayName: 'Install Dependencies'
+  inputs:
+    command: 'install'
+    workingDir: '$(Build.SourcesDirectory)/frontend'
+
+- task: Npm@1
+  displayName: 'Build React App'
+  inputs:
+    command: 'custom'
+    customCommand: 'run build'
+    workingDir: '$(Build.SourcesDirectory)/frontend'
+
 - task: S3Upload@1
   displayName: 'Deploy frontend to S3'
   inputs:
     awsCredentials: 'aws-connection'  # AWS connection name
-    regionName: 'ca-central-1'  # Set your AWS region
+    regionName: 'ca-central-1'  # AWS region
     bucketName: 'geekyrbhalala.online'  # S3 bucket name
-    sourceFolder: '$(Build.SourcesDirectory)/Frontend'  # Path to the frontend folder in your repo
-    globExpressions: '**'  # Includes all files from the source folder
+    sourceFolder: '$(Build.SourcesDirectory)/frontend/build'  # Upload only the build folder
+    globExpressions: '**'  # Includes all files from the build folder
+    createBucket: false  # Set to true if you want to auto-create the bucket

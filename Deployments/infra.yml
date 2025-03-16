@@ -12,7 +12,7 @@ parameters:
   default: false
 
 variables:
-  workingDirectory: '$(System.DefaultWorkingDirectory)/Infrastructure'
+  workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure'
 
 stages:
 - ${{ if eq(parameters.IsSetupInfrastructure, true) }}:
