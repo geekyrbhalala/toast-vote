@@ -5,6 +5,13 @@ pool:
 
 steps:
 - task: Npm@1
+  displayName: 'Clear npm Cache'
+  inputs:
+    command: 'custom'
+    customCommand: 'cache clean --force'
+    workingDir: '$(Build.SourcesDirectory)/frontend'
+
+- task: Npm@1
   displayName: 'Install Dependencies'
   inputs:
     command: 'install'
