@@ -1,12 +1,3 @@
-provider "aws" {
-  region = var.aws_region
-}
-
-provider "aws" {
-  alias  = "acm"
-  region = "us-east-1"
-}
-
 locals {
   index_document = "index.html"
   error_document = "error.html"
@@ -55,7 +46,7 @@ module "route53_with_cdn" {
 }
 
 # S3 Bucket Policy to restrict only to cdn access
-data "aws_caller_identity" "current" {}
+
 
 resource "aws_s3_bucket_policy" "frontend_policy" {
   bucket = module.s3_bucket.s3_bucket_id
@@ -80,18 +71,3 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
   })
 }
 
-module "toastmasters_api" {
-  source     = "./modules/APIGateway"
-  stage_name = var.api_gateway_stage_name
-}
-
-module "toastmasters_database" {
-  source = "./modules/DynamoDB"
-}
-
-module "lambda_iam_role" {
-  source             = "./modules/IAM"
-  votes_table_arn    = module.toastmasters_database.votes_table_arn
-  comments_table_arn = module.toastmasters_database.comments_table_arn
-  meetings_table_arn = module.toastmasters_database.meetings_table_arn
-}

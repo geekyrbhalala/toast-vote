@@ -57,3 +57,8 @@ resource "aws_iam_role_policy_attachment" "lambda_dynamodb_attachment" {
   policy_arn = aws_iam_policy.lambda_dynamodb_policy.arn
   role       = aws_iam_role.lambda_execution_role.name
 }
+
+
+output "lambda_iam_role_arn" {
+  value = aws_iam_role.lambda_execution_role.arn
+}

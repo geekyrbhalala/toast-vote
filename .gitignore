@@ -195,3 +195,6 @@ override.tf.json
 
 # Ignore backup files
 *.tfbackup
+
+
+*.zip
