@@ -1,82 +1,55 @@
 import React, { useState } from 'react';
+import { useParams, useHistory } from 'react-router-dom';
+import '../styles/VotingForm.css';
 
 const VotingForm = () => {
-  const [votes, setVotes] = useState({
-    bestSpeaker: '',
-    bestEvaluator: '',
-    bestTableTopicMaster: ''
-  });
-
+  const { category } = useParams();
+  const history = useHistory();
+  const [vote, setVote] = useState('');
   const [voted, setVoted] = useState(false);
 
-  // Handle input change
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setVotes({
-      ...votes,
-      [name]: value
-    });
+    setVote(e.target.value);
   };
 
-  // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
     setVoted(true);
-    alert('Your vote has been submitted!');
+    alert(`You voted for: ${vote}`);
+  };
+
+  const handleBackToHome = () => {
+    history.push('/');
   };
 
   return (
-    <div>
-      <h2>Vote for the following categories:</h2>
+    <div className="voting-form-container">
+      <h2>Vote for {category}</h2>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Best Speaker: </label>
+        <div className="input-group">
+          <label>Enter Name</label>
           <input
             type="text"
-            name="bestSpeaker"
-            value={votes.bestSpeaker}
+            value={vote}
             onChange={handleChange}
+            placeholder={`Enter ${category} Name`}
             required
           />
         </div>
-        <div>
-          <label>Best Evaluator: </label>
-          <input
-            type="text"
-            name="bestEvaluator"
-            value={votes.bestEvaluator}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <div>
-          <label>Best Table Topic Master: </label>
-          <input
-            type="text"
-            name="bestTableTopicMaster"
-            value={votes.bestTableTopicMaster}
-            onChange={handleChange}
-            required
-          />
-        </div>
-        <button type="submit" disabled={voted}>
+        <button type="submit" className="submit-btn" disabled={voted}>
           {voted ? 'Vote Submitted' : 'Submit Vote'}
         </button>
       </form>
 
       {voted && (
-        <div>
+        <div className="thank-you-message">
           <h3>Thank you for voting!</h3>
-          <p>Your votes:</p>
-          <ul>
-            <li>Best Speaker: {votes.bestSpeaker}</li>
-            <li>Best Evaluator: {votes.bestEvaluator}</li>
-            <li>Best Table Topic Master: {votes.bestTableTopicMaster}</li>
-          </ul>
+          <p>You voted for: {vote}</p>
+          <button onClick={handleBackToHome}>Back to Home</button>
         </div>
       )}
     </div>
   );
-}
+};
 
 export default VotingForm;

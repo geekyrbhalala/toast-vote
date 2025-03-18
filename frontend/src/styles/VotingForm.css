@@ -1,0 +1,149 @@
+/* Container for the voting form */
+.voting-form-container {
+    font-family: 'Arial', sans-serif;
+    max-width: 550px;
+    margin: 0 auto;
+    padding: 30px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    border: 1px solid #e0e0e0;
+  }
+  
+  /* Main heading */
+  h2 {
+    font-size: 28px;
+    color: #1a73e8; /* Professional blue */
+    margin-bottom: 20px;
+    font-weight: 600;
+  }
+  
+  /* Description under the main heading */
+  .description {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 20px;
+  }
+  
+  /* Form container */
+  .voting-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Input group (each label and input field pair) */
+  .input-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: row; /* Align label and input horizontally */
+    align-items: center; /* Vertically align items */
+  }
+  
+  /* Label styling (bold and left-aligned) */
+  .input-group label {
+    font-size: 16px;
+    color: #333;
+    font-weight: bold; /* Make label bold */
+    margin-right: 15px; /* Add space between label and input */
+    display: block;
+    width: 150px; /* Set fixed width to label for alignment */
+  }
+  
+  /* Input field styling */
+  .input-group input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-sizing: border-box;
+    transition: border-color 0.3s ease;
+  }
+  
+  /* Input focus effect */
+  .input-group input:focus {
+    border-color: #1a73e8;
+    outline: none;
+  }
+  
+  /* Submit button styling */
+  button.submit-btn {
+    background-color: #1a73e8; /* Professional blue */
+    color: white;
+    padding: 14px 24px;
+    font-size: 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+    margin-top: 20px;
+  }
+  
+  /* Disabled button */
+  button.submit-btn:disabled {
+    background-color: #b0c4de;
+    cursor: not-allowed;
+  }
+  
+  /* Submit button hover effect */
+  button.submit-btn:hover:not(:disabled) {
+    background-color: #166cc1;
+  }
+  
+  /* Thank you message styling */
+  .thank-you-message {
+    margin-top: 30px;
+    text-align: center;
+    color: #4CAF50; /* Green for success */
+  }
+  
+  .thank-you-message h3 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  
+  .thank-you-message ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .thank-you-message li {
+    font-size: 16px;
+    color: #333;
+    margin: 5px 0;
+  }
+  
+  /* Responsive styling */
+  @media (max-width: 600px) {
+    .voting-form-container {
+      padding: 20px;
+      max-width: 90%;
+    }
+  
+    h2 {
+      font-size: 24px;
+    }
+  
+    .description {
+      font-size: 14px;
+    }
+  
+    .input-group input {
+      font-size: 14px;
+      padding: 10px;
+    }
+  
+    button.submit-btn {
+      font-size: 16px;
+      padding: 12px;
+    }
+  
+    .thank-you-message h3 {
+      font-size: 20px;
+    }
+  }
+  

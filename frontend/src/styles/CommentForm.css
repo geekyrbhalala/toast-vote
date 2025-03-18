@@ -1,0 +1,53 @@
+/* Common form styles for Voting and Comment forms */
+.input-group {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .input-group label {
+    font-weight: bold;
+    margin-bottom: 5px;
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-top: 5px;
+  }
+  
+  button.submit-btn {
+    background-color: #1a73e8;
+    color: white;
+    padding: 12px 24px;
+    font-size: 18px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    width: 100%;
+  }
+  
+  button.submit-btn:disabled {
+    background-color: #b0c4de;
+    cursor: not-allowed;
+  }
+  
+  button.submit-btn:hover:not(:disabled) {
+    background-color: #166cc1;
+  }
+  
+  .thank-you-message {
+    margin-top: 20px;
+    text-align: center;
+    color: #4CAF50;
+  }
+  
+  button {
+    margin-top: 10px;
+  }
+  

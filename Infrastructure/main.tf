@@ -38,7 +38,7 @@ module "cdn_s3_distribution" {
   index_document = local.index_document
   acm_cert_arn   = aws_acm_certificate.cert.arn
 
-  depends_on = [ aws_acm_certificate.cert ]
+  depends_on = [aws_acm_certificate.cert]
 }
 
 
@@ -51,7 +51,7 @@ module "route53_with_cdn" {
   acm_domain_validation_options = aws_acm_certificate.cert.domain_validation_options
   acm_cert_arn                  = aws_acm_certificate.cert.arn
 
-  depends_on = [ aws_acm_certificate.cert ]
+  depends_on = [aws_acm_certificate.cert]
 }
 
 # S3 Bucket Policy to restrict only to cdn access
@@ -78,4 +78,20 @@ resource "aws_s3_bucket_policy" "frontend_policy" {
       }
     ]
   })
+}
+
+module "toastmasters_api" {
+  source     = "./modules/APIGateway"
+  stage_name = var.api_gateway_stage_name
+}
+
+module "toastmasters_database" {
+  source = "./modules/DynamoDB"
+}
+
+module "lambda_iam_role" {
+  source             = "./modules/IAM"
+  votes_table_arn    = module.toastmasters_database.votes_table_arn
+  comments_table_arn = module.toastmasters_database.comments_table_arn
+  meetings_table_arn = module.toastmasters_database.meetings_table_arn
 }

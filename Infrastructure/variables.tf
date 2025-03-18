@@ -6,3 +6,7 @@ variable "domain_name" {
   description = "Custom domain name"
   type        = string
 }
+
+variable "api_gateway_stage_name" {
+  type = string
+}
