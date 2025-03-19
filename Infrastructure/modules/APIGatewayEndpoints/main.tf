@@ -1,6 +1,6 @@
 variable "stage_name" {}
 variable "aws_region" {}
-variable "lambda_function_name" {}
+variable "function_name" {}
 variable "rest_api_id" {}
 variable "resource_id" {}
 variable "http_method" {}
@@ -19,7 +19,8 @@ resource "aws_api_gateway_integration" "integration" {
   http_method             = aws_api_gateway_method.method.http_method
   integration_http_method = var.http_method
   type                    = "AWS_PROXY"
-  uri                     = "arn:aws:lambda:${var.aws_region}:${var.account_id}:function:${var.lambda_function_name}"
+  uri                     = "arn:aws:apigateway:${var.aws_region}:lambda:path/2015-03-31/functions/arn:aws:lambda:${var.aws_region}:${var.account_id}:function:${var.function_name}/invocations"
+  depends_on = [ aws_api_gateway_method.method ]
 }
 
 resource "aws_api_gateway_method_response" "method_response" {
@@ -29,26 +30,13 @@ resource "aws_api_gateway_method_response" "method_response" {
   status_code = "200"
 }
 
-resource "aws_api_gateway_integration_response" "integration_response" {
-  rest_api_id          = var.rest_api_id
-  resource_id          = var.resource_id
-  http_method          = aws_api_gateway_method.method.http_method
-  status_code          = aws_api_gateway_method_response.method_response.status_code
-  selection_pattern    = ""
-  response_templates   = {}
-}
-
-resource "aws_api_gateway_deployment" "deployment" {
-  depends_on = [
-    aws_api_gateway_method.method,
-    aws_api_gateway_integration.integration
-  ]
-
-  rest_api_id = var.rest_api_id
-}
-
-resource "aws_api_gateway_stage" "stage" {
-  deployment_id = aws_api_gateway_deployment.deployment.id
-  rest_api_id   = var.rest_api_id
-  stage_name    = var.stage_name
-}
+# resource "aws_api_gateway_integration_response" "integration_response" {
+#   rest_api_id          = var.rest_api_id
+#   resource_id          = var.resource_id
+#   http_method          = aws_api_gateway_method.method.http_method
+#   status_code          = aws_api_gateway_method_response.method_response.status_code
+#   selection_pattern    = ""
+#   response_templates   = {
+#     "application/json" = ""
+#   }
+# }

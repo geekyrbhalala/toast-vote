@@ -44,13 +44,34 @@ stages:
           command: 'plan'
           workingDirectory: ${{variables.workingDirectory}}
           commandOptions: '-out main.tfplan'
-          environmentServiceNameAWS: 'aws-terraform-svc'
+          environmentServiceNameAWS: 'aws-terraform-svc' 
       - task: PublishPipelineArtifact@1
         displayName: 'Publish Terraform Plan'
         inputs:
           targetPath: ${{variables.workingDirectory}}
           artifactName: 'terraformPlan'
-      
+      - task: Npm@1
+        displayName: 'Clear npm Cache'
+        inputs:
+          command: 'custom'
+          customCommand: 'cache clean --force'
+          workingDir: '$(Build.SourcesDirectory)/frontend'
+      - task: Npm@1
+        displayName: 'Install Dependencies'
+        inputs:
+          command: 'install'
+          workingDir: '$(Build.SourcesDirectory)/frontend'
+      - task: Npm@1
+        displayName: 'Build React App'
+        inputs:
+          command: 'custom'
+          customCommand: 'run build'
+          workingDir: '$(Build.SourcesDirectory)/frontend'
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish Frontend'
+        inputs:
+          targetPath: '$(Build.SourcesDirectory)/frontend'
+          artifactName: 'frontend'
   # Stage 2 - Terraform Apply
   - stage: Release
     displayName: "Terraform Release"
