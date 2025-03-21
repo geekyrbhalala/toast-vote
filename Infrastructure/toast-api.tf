@@ -90,10 +90,12 @@ resource "aws_api_gateway_stage" "dev" {
 # Lambda Permission for API Gateway to invoke Lambda function
 resource "aws_lambda_permission" "apigateway_invoke" {
   for_each      = local.api_map
-  statement_id  = "AllowAPIGatewayInvoke"
+  statement_id  = "AllowAPIGatewayInvoke${each.value.http_method}_${each.value.resource}"
   action        = "lambda:InvokeFunction"
   function_name = lower("${each.value.http_method}_${each.value.resource}")
   principal     = "apigateway.amazonaws.com"
+  # Restrict invocation to API Gateway stage and method
+  source_arn = "arn:aws:execute-api:ca-central-1:${local.account_id}:${aws_api_gateway_rest_api.toastmasters_api.id}/*/${each.value.http_method}/${each.value.resource}"
 }
 
 
