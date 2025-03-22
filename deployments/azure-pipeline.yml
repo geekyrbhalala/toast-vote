@@ -6,7 +6,7 @@ pool:
 parameters:
 - name: IsSetupInfrastructure
   type: boolean
-  default: false
+  default: true
 - name: IsTeardownInfrastructure
   type: boolean
   default: false
@@ -18,60 +18,67 @@ stages:
   # Stage 1 - Build
   - stage: Build
     displayName: "Build"
+    condition: eq(parameters.IsSetupInfrastructure, true)
     jobs:
     - job: Build
       displayName: "Build Job"
       steps:
       - task: TerraformTaskV4@4
-        name: 'terraformInit'
+        name: terraformInit
         displayName: 'Initialize Terraform'
         inputs:
           provider: 'aws'
-          command: 'init'         
-          workingDirectory: ${{variables.workingDirectory}}
+          command: 'init'
+          workingDirectory: $(workingDirectory)
           backendType: 's3'
           backendAWSRegion: 'ca-central-1'
           backendServiceAWS: 'aws-terraform-svc'
           backendAWSBucketName: 'terraform-state-toast-vote'
           backendAWSKey: 'toast-vote/terraform.tfstate'
           backendAWSDynamoDBTableName: 'toast-vote-locks'
+      
       - task: TerraformTaskV4@4
-        name: 'terraformPlan'
+        name: terraformPlan
         displayName: 'Plan Terraform'
         inputs:
           provider: 'aws'
           command: 'plan'
-          workingDirectory: ${{variables.workingDirectory}}
+          workingDirectory: $(workingDirectory)
           commandOptions: '-out main.tfplan'
-          environmentServiceNameAWS: 'aws-terraform-svc' 
+          environmentServiceNameAWS: 'aws-terraform-svc'
+      
       - task: PublishPipelineArtifact@1
         displayName: 'Publish Terraform Plan'
         inputs:
-          targetPath: ${{variables.workingDirectory}}
+          targetPath: $(workingDirectory)
           artifactName: 'terraformPlan'
+      
       - task: Npm@1
         displayName: 'Clear npm Cache'
         inputs:
           command: 'custom'
           customCommand: 'cache clean --force'
           workingDir: '$(Build.SourcesDirectory)/frontend'
+      
       - task: Npm@1
         displayName: 'Install Dependencies'
         inputs:
           command: 'install'
           workingDir: '$(Build.SourcesDirectory)/frontend'
+      
       - task: Npm@1
         displayName: 'Build React App'
         inputs:
           command: 'custom'
           customCommand: 'run build'
           workingDir: '$(Build.SourcesDirectory)/frontend'
+      
       - task: PublishPipelineArtifact@1
         displayName: 'Publish Frontend'
         inputs:
           targetPath: '$(Build.SourcesDirectory)/frontend/build'
           artifactName: 'frontend_app'
-  
+
   # Stage 2 - Infrastructure
   - stage: Infrastructure
     displayName: "Infrastructure Release"
@@ -84,33 +91,35 @@ stages:
         inputs:
           artifactName: 'terraformPlan'
           targetPath: $(Pipeline.Workspace)
+      
       - task: TerraformTaskV4@4
-        name: 'terraformInit'
+        name: terraformInit
         displayName: 'Initialize Terraform'
         inputs:
           provider: 'aws'
-          command: 'init'         
-          workingDirectory: ${{variables.workingDirectory}}
+          command: 'init'
+          workingDirectory: $(workingDirectory)
           backendType: 's3'
           backendAWSRegion: 'ca-central-1'
           backendServiceAWS: 'aws-terraform-svc'
           backendAWSBucketName: 'terraform-state-toast-vote'
           backendAWSKey: 'toast-vote/terraform.tfstate'
+      
       - task: TerraformTaskV4@4
-        name: 'terraformApply'
+        name: terraformApply
         displayName: 'Apply Terraform'
         inputs:
           provider: 'aws'
           command: 'apply'
-          workingDirectory: ${{variables.workingDirectory}}
+          workingDirectory: $(workingDirectory)
           commandOptions: '-input=false $(Pipeline.Workspace)/main.tfplan'
           environmentServiceNameAWS: 'aws-terraform-svc'
-  
+
   # Stage 3 - Release Frontend App
   - stage: Deploy
     displayName: "Deploy WebApp"
     jobs:
-    - job: 
+    - job: WebAppRelease
       displayName: "WebApp Release Jobs"
       steps:
       - task: DownloadPipelineArtifact@2
@@ -118,51 +127,53 @@ stages:
         inputs:
           artifactName: 'frontend_app'
           targetPath: $(Pipeline.Workspace)/webapp
+      
       - task: S3Upload@1
         displayName: 'Upload frontend to S3'
         inputs:
-          awsCredentials: 'aws-connection'  # AWS connection name
-          regionName: 'ca-central-1'  # AWS region
-          bucketName: 'geekyrbhalala.online'  # S3 bucket name
-          sourceFolder: '$(Pipeline.Workspace)/webapp'  # Upload only the build folder
-          globExpressions: '**'  # Includes all files from the build folder
-          createBucket: false  # Set to true if you want to auto-create the bucket
+          awsCredentials: 'aws-connection'
+          regionName: 'ca-central-1'
+          bucketName: 'geekyrbhalala.online'
+          sourceFolder: '$(Pipeline.Workspace)/webapp'
+          globExpressions: '**'
+          createBucket: false
 
+  # Stage 4 - Infrastructure Teardown
   - stage: InfrastructureTeardown
-  - ${{ if eq(parameters.IsTeardownInfrastructure, true) }}:
     displayName: 'Infrastructure Teardown'
+    condition: eq(parameters.IsTeardownInfrastructure, true)
     jobs:
     - job: TerraformIaC
       displayName: 'Infrastructure Teardown'
       steps:
       - task: TerraformTaskV4@4
-        name: 'terraformInit'
+        name: terraformInit
         displayName: 'Initialize Terraform'
         inputs:
           provider: 'aws'
           command: 'init'
-          workingDirectory: ${{variables.workingDirectory}}
+          workingDirectory: $(workingDirectory)
           backendType: 's3'
           backendAWSRegion: 'ca-central-1'
           backendServiceAWS: 'aws-terraform-svc'
           backendAWSBucketName: 'terraform-state-toast-vote'
           backendAWSKey: 'toast-vote/terraform.tfstate'
-
+      
       - task: TerraformTaskV4@4
-        name: 'terraformPlan'
+        name: terraformPlan
         displayName: 'Plan Terraform'
         inputs:
           provider: 'aws'
           command: 'plan'
-          workingDirectory: ${{variables.workingDirectory}}
+          workingDirectory: $(workingDirectory)
           commandOptions: '-out main.tfplan'
           environmentServiceNameAWS: 'aws-terraform-svc'
-
+      
       - task: TerraformTaskV4@4
-        name: 'terraformDestroy'
+        name: terraformDestroy
         displayName: 'Destroy Terraform'
         inputs:
           provider: 'aws'
           command: 'destroy'
-          workingDirectory: ${{variables.workingDirectory}}
+          workingDirectory: $(workingDirectory)
           environmentServiceNameAWS: 'aws-terraform-svc'
