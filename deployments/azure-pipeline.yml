@@ -16,9 +16,9 @@ variables:
 
 stages:
 - ${{ if eq(parameters.IsSetupInfrastructure, true) }}:
-  # Stage 1 - Terraform Initialization
+  # Stage 1 - Build
   - stage: Build
-    displayName: "Terraform Build"
+    displayName: "Build"
     jobs:
     - job: Build
       displayName: "Terraform Build Job"
@@ -70,11 +70,12 @@ stages:
       - task: PublishPipelineArtifact@1
         displayName: 'Publish Frontend'
         inputs:
-          targetPath: '$(Build.SourcesDirectory)/frontend'
-          artifactName: 'frontend'
-  # Stage 2 - Terraform Apply
-  - stage: Release
-    displayName: "Terraform Release"
+          targetPath: '$(Build.SourcesDirectory)/frontend/build'
+          artifactName: 'frontend_app'
+  
+  # Stage 2 - Infrastructure
+  - stage: Infrastructure
+    displayName: "Release"
     jobs:
     - job: Apply
       displayName: "Terraform Release Job"
@@ -105,8 +106,27 @@ stages:
           workingDirectory: ${{variables.workingDirectory}}
           commandOptions: '-input=false $(Pipeline.Workspace)/main.tfplan'
           environmentServiceNameAWS: 'aws-terraform-svc'
-
-
+  # Stage 3 - Release Frontend App
+  - stage: Deploy
+    displayName: "Deploy WebApp"
+    jobs:
+    - job: 
+      displayName: "Download Web App"
+      steps:
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download Web App Artifact'
+        inputs:
+          artifactName: 'frontend_app'
+          targetPath: $(Pipeline.Workspace)/webapp
+      - task: S3Upload@1
+        displayName: 'Deploy frontend to S3'
+        inputs:
+          awsCredentials: 'aws-connection'  # AWS connection name
+          regionName: 'ca-central-1'  # AWS region
+          bucketName: 'geekyrbhalala.online'  # S3 bucket name
+          sourceFolder: '$(Pipeline.Workspace)/webapp'  # Upload only the build folder
+          globExpressions: '**'  # Includes all files from the build folder
+          createBucket: false  # Set to true if you want to auto-create the bucket
 # Stage 3 - Teardown Infrastructure
 - ${{ if eq(parameters.IsTeardownInfrastructure, true) }}:
   - stage: InfrastructureTeardown
