@@ -1,8 +1,3 @@
-locals {
-  index_document = "index.html"
-  error_document = "error.html"
-}
-
 module "s3_bucket" {
   source         = "./modules/S3"
   aws_region     = var.aws_region
@@ -11,43 +6,17 @@ module "s3_bucket" {
   error_document = local.error_document
 }
 
-# ACM Certificate (for custom domain)
-resource "aws_acm_certificate" "cert" {
-  provider          = aws.acm
-  domain_name       = var.domain_name
-  validation_method = "DNS"
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
 module "cdn_s3_distribution" {
   source         = "./modules/Cloudfront"
   domain_name    = var.domain_name
   aws_region     = var.aws_region
   index_document = local.index_document
-  acm_cert_arn   = aws_acm_certificate.cert.arn
-
-  depends_on = [aws_acm_certificate.cert]
-}
-
-
-
-module "route53_with_cdn" {
-  source                        = "./modules/Route53"
-  domain_name                   = var.domain_name
-  cdn_endpoint                  = module.cdn_s3_distribution.cdn_endpoint
-  cdn_hosted_zone_id            = module.cdn_s3_distribution.cdn_hosted_zone_id
-  acm_domain_validation_options = aws_acm_certificate.cert.domain_validation_options
-  acm_cert_arn                  = aws_acm_certificate.cert.arn
-
-  depends_on = [aws_acm_certificate.cert]
+  acm_cert_arn   = aws_acm_certificate.website_cert.arn
+  zone_id        = data.aws_route53_zone.geekyrbhalala.zone_id
+  depends_on     = [aws_route53_record.website_cert_validation]
 }
 
 # S3 Bucket Policy to restrict only to cdn access
-
-
 resource "aws_s3_bucket_policy" "frontend_policy" {
   bucket = module.s3_bucket.s3_bucket_id
 
