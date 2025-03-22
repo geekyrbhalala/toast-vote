@@ -129,6 +129,7 @@ stages:
           createBucket: false  # Set to true if you want to auto-create the bucket
 
   - stage: InfrastructureTeardown
+  - ${{ if eq(parameters.IsTeardownInfrastructure, true) }}:
     displayName: 'Infrastructure Teardown'
     jobs:
     - job: TerraformIaC
