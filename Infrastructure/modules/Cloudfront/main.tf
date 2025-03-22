@@ -2,6 +2,7 @@ variable "domain_name" {}
 variable "aws_region" {}
 variable "index_document" {}
 variable "acm_cert_arn" {}
+variable "zone_id" {}
 
 # CloudFront Origin Access Control
 resource "aws_cloudfront_origin_access_control" "oac" {
@@ -10,6 +11,19 @@ resource "aws_cloudfront_origin_access_control" "oac" {
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
+}
+
+# Route 53 Record for CloudFront
+resource "aws_route53_record" "website" {
+  zone_id = var.zone_id
+  name    = var.domain_name  # Your domain name, e.g., geekyrbhalala.online
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.s3_distribution.domain_name  # This should be the CloudFront domain name, e.g., d12345abcde.cloudfront.net
+    zone_id                = aws_cloudfront_distribution.s3_distribution.hosted_zone_id
+    evaluate_target_health = false
+  }
 }
 
 # CloudFront Distribution
@@ -51,14 +65,6 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
       }
     }
   }
-}
-
-output "cdn_endpoint" {
-  value = aws_cloudfront_distribution.s3_distribution.domain_name
-}
-
-output "cdn_hosted_zone_id" {
-  value = aws_cloudfront_distribution.s3_distribution.hosted_zone_id
 }
 
 output "cdn_distribution_id" {

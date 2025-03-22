@@ -30,13 +30,3 @@ resource "aws_api_gateway_method_response" "method_response" {
   status_code = "200"
 }
 
-# resource "aws_api_gateway_integration_response" "integration_response" {
-#   rest_api_id          = var.rest_api_id
-#   resource_id          = var.resource_id
-#   http_method          = aws_api_gateway_method.method.http_method
-#   status_code          = aws_api_gateway_method_response.method_response.status_code
-#   selection_pattern    = ""
-#   response_templates   = {
-#     "application/json" = ""
-#   }
-# }

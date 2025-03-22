@@ -7,6 +7,6 @@ variable "domain_name" {
   type        = string
 }
 
-variable "api_gateway_stage_name" {
+variable "api_gateway_stage" {
   type = string
 }
