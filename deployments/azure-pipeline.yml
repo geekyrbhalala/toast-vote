@@ -13,12 +13,13 @@ parameters:
 
 variables:
   workingDirectory: '$(System.DefaultWorkingDirectory)/infrastructure'
-
+  IsSetupInfrastructure: ${{ parameters.IsSetupInfrastructure }}
+  IsTeardownInfrastructure: ${{ parameters.IsTeardownInfrastructure }}
 stages:
   # Stage 1 - Build
   - stage: Build
     displayName: "Build"
-    condition: eq(parameters.IsSetupInfrastructure, true)
+    condition: eq(variables['IsSetupInfrastructure'], 'true')
     jobs:
     - job: Build
       displayName: "Build Job"
@@ -141,7 +142,7 @@ stages:
   # Stage 4 - Infrastructure Teardown
   - stage: InfrastructureTeardown
     displayName: 'Infrastructure Teardown'
-    condition: eq(parameters.IsTeardownInfrastructure, true)
+    condition: eq(variables['IsTeardownInfrastructure'], 'true')
     jobs:
     - job: TerraformIaC
       displayName: 'Infrastructure Teardown'
